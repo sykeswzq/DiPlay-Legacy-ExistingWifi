@@ -41,6 +41,7 @@ import com.shilapi.xcertplay.network.ManualHotspotManager
 import com.shilapi.xcertplay.network.WifiP2pGroupManager
 import com.shilapi.xcertplay.network.WirelessHotspotInfo
 import com.shilapi.xcertplay.network.WirelessHotspotBackend
+import com.shilapi.xcertplay.network.ExistingWifiManager
 import com.shilapi.xcertplay.network.WirelessHotspotManager
 import com.shilapi.xcertplay.transport.BlockingDuplexByteStream
 import com.shilapi.xcertplay.transport.BluetoothRfcommDuplexStream
@@ -1592,7 +1593,8 @@ class CarPlayController(
     private fun startWirelessHotspot(generation: Int): WirelessHotspotInfo {
         val hotspotMode = when {
             Build.VERSION.SDK_INT < Build.VERSION_CODES.O &&
-                config.wirelessHotspotMode != WirelessHotspotMode.MANUAL -> WirelessHotspotMode.MANUAL
+                config.wirelessHotspotMode != WirelessHotspotMode.MANUAL &&
+                config.wirelessHotspotMode != WirelessHotspotMode.EXISTING_WIFI -> WirelessHotspotMode.MANUAL
             Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
                 config.wirelessHotspotMode == WirelessHotspotMode.WIFI_P2P -> WirelessHotspotMode.LOCAL_ONLY_HOTSPOT
             else -> config.wirelessHotspotMode
@@ -1619,6 +1621,13 @@ class CarPlayController(
                 band = config.manualHotspotBand,
                 channel = config.manualHotspotChannel,
                 security = config.manualHotspotSecurity,
+                onDiagnostic = ::debugLog,
+            )
+            WirelessHotspotMode.EXISTING_WIFI -> ExistingWifiManager(
+                context = appContext,
+                ssid = config.manualHotspotSsid
+                    ?: throw IOException("Existing Wi-Fi SSID is not configured"),
+                passphrase = config.manualHotspotPassphrase.orEmpty(),
                 onDiagnostic = ::debugLog,
             )
         }

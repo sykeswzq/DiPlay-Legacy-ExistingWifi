@@ -515,11 +515,12 @@ class DiPlayActivity : ComponentActivity() {
 
     private fun wirelessLinkControls(parent: LinearLayout) {
         val mode = if (pendingCarHotspotSetup) WirelessHotspotMode.MANUAL else AirPlayPersistence.loadWirelessHotspotMode(this)
-        val modes = listOf(WirelessHotspotMode.MANUAL, WirelessHotspotMode.WIFI_P2P)
-        val titles = listOf(getString(R.string.built_in_car_hotspot), getString(R.string.wifi_direct))
+        val modes = listOf(WirelessHotspotMode.MANUAL, WirelessHotspotMode.WIFI_P2P, WirelessHotspotMode.EXISTING_WIFI)
+        val titles = listOf(getString(R.string.built_in_car_hotspot), getString(R.string.wifi_direct), "现有 Wi-Fi / 手机热点")
         val descriptions = listOf(
             getString(R.string.hotspot_mode_manual_desc),
-            getString(R.string.hotspot_mode_p2p_desc)
+            getString(R.string.hotspot_mode_p2p_desc),
+            "车机连手机热点，iPhone 也连同一个热点（无需车机开热点）"
         )
         val wide = resources.configuration.screenWidthDp >= 850
         val choices = if (wide) row().apply { gravity = Gravity.TOP } else column()
@@ -530,12 +531,19 @@ class DiPlayActivity : ComponentActivity() {
                 if (index > 0) marginStart = dp(16)
             } else LinearLayout.LayoutParams(-1, -2))
             option.addView(button("${if (mode == candidate) "✓  " else ""}${titles[index]}", mode == candidate) {
-                if (candidate == WirelessHotspotMode.MANUAL) {
-                    pendingCarHotspotSetup = true
-                    render()
-                } else {
-                    pendingCarHotspotSetup = false
-                    applyWirelessLink(candidate)
+                when (candidate) {
+                    WirelessHotspotMode.MANUAL -> {
+                        pendingCarHotspotSetup = true
+                        render()
+                    }
+                    WirelessHotspotMode.EXISTING_WIFI -> {
+                        pendingCarHotspotSetup = false
+                        applyWirelessLink(WirelessHotspotMode.EXISTING_WIFI)
+                    }
+                    else -> {
+                        pendingCarHotspotSetup = false
+                        applyWirelessLink(candidate)
+                    }
                 }
             }, matchButton(12, 60))
             option.addView(label(descriptions[index], 15, MUTED).apply { setPadding(0, dp(6), 0, dp(12)) })
@@ -552,6 +560,17 @@ class DiPlayActivity : ComponentActivity() {
                 }
             }, matchButton(12, 60))
             parent.addView(label(if (pendingCarHotspotSetup) getString(R.string.finish_setup_save_your_hotspot_details_to_use_this_mode) else if (carHotspotOff()) getString(R.string.hotspot_details_off) else getString(R.string.hotspot_details_saved), 15, if (carHotspotOff()) WARNING else MUTED).apply { setPadding(0, dp(12), 0, 0) })
+        } else if (mode == WirelessHotspotMode.EXISTING_WIFI) {
+            parent.addView(label("现有 Wi-Fi 设置", 22, TEXT, true))
+            parent.addView(label("先在车机设置里连上你的手机热点，然后把热点名称和密码填到下面。iPhone 也连同一个热点，再点连接。", 16, MUTED).apply { setPadding(0, dp(8), 0, dp(12)) })
+            parent.addView(button(getString(R.string.open_car_wi_fi_settings), false) { openCarClientWifiSettings() }, matchButton(0, 60))
+            parent.addView(button(if (storedSsid().isBlank()) "填写 Wi-Fi 名称和密码" else "${getString(R.string.edit_saved_hotspot_prefix)}${storedSsid()}", false) {
+                askHotspotCredentials { ssid, password ->
+                    saveHotspotCredentials(ssid, password)
+                    applyWirelessLink(WirelessHotspotMode.EXISTING_WIFI)
+                }
+            }, matchButton(12, 60))
+            parent.addView(label("车机和 iPhone 必须连同一个 Wi-Fi（手机热点）。如连不上，关闭路由器的 AP 隔离/客户端隔离。", 15, MUTED).apply { setPadding(0, dp(12), 0, 0) })
         } else {
             parent.addView(label(getString(R.string.turn_the_car_s_wi_fi_switch_on_allow_location_nearby_devic), 16, MUTED))
             parent.addView(button(getString(R.string.open_car_wi_fi_settings), false) { openCarClientWifiSettings() }, matchButton(12, 60))

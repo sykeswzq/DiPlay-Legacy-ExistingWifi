@@ -21,6 +21,7 @@ enum class WirelessHotspotMode {
     WIFI_P2P,
     LOCAL_ONLY_HOTSPOT,
     MANUAL,
+    EXISTING_WIFI,
 }
 
 enum class ManualHotspotBand {
@@ -93,27 +94,32 @@ class CarPlayRuntimeConfig(
         require(remoteMfiToken?.contains('\u0000') != true) {
             "Remote MFi token must not contain U+0000"
         }
-        if (transport == CarPlayTransport.WIRELESS && wirelessHotspotMode == WirelessHotspotMode.MANUAL) {
+        if (transport == CarPlayTransport.WIRELESS &&
+            (wirelessHotspotMode == WirelessHotspotMode.MANUAL ||
+                wirelessHotspotMode == WirelessHotspotMode.EXISTING_WIFI)
+        ) {
             val ssid = manualHotspotSsid
             require(!ssid.isNullOrBlank()) {
-                "manualHotspotSsid is required in manual hotspot mode"
+                "Wi-Fi SSID is required in ${wirelessHotspotMode.name} mode"
             }
             require('\u0000' !in ssid) {
-                "manualHotspotSsid must not contain U+0000"
+                "Wi-Fi SSID must not contain U+0000"
             }
             val passphrase = manualHotspotPassphrase.orEmpty()
             require('\u0000' !in passphrase) {
-                "manualHotspotPassphrase must not contain U+0000"
+                "Wi-Fi passphrase must not contain U+0000"
             }
             require(passphrase.isEmpty() || passphrase.length in 8..63) {
-                "manualHotspotPassphrase must be empty or between 8 and 63 characters"
+                "Wi-Fi passphrase must be empty or between 8 and 63 characters"
             }
+        }
+        if (transport == CarPlayTransport.WIRELESS && wirelessHotspotMode == WirelessHotspotMode.MANUAL) {
             require(manualHotspotChannel in 0..196) {
                 "manualHotspotChannel must be 0 or in 1..196"
             }
             require(
                 manualHotspotSecurity == ManualHotspotSecurity.OPEN ||
-                    passphrase.length in 8..63,
+                    manualHotspotPassphrase.orEmpty().length in 8..63,
             ) {
                 "A passphrase between 8 and 63 characters is required for secured manual hotspots"
             }
@@ -124,7 +130,7 @@ class CarPlayRuntimeConfig(
                 "manualHotspotChannel is not valid for the selected manual hotspot band"
             }
             require(
-                manualHotspotSecurity == ManualHotspotSecurity.OPEN || passphrase.isNotEmpty(),
+                manualHotspotSecurity == ManualHotspotSecurity.OPEN || manualHotspotPassphrase.orEmpty().isNotEmpty(),
             ) {
                 "manualHotspotPassphrase is required for secured manual hotspots"
             }
