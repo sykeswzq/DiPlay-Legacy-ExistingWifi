@@ -2516,6 +2516,7 @@ class CarPlayHostActivity : ComponentActivity() {
         WirelessHotspotMode.WIFI_P2P -> getString(R.string.wi_fi_p2p_5_ghz)
         WirelessHotspotMode.LOCAL_ONLY_HOTSPOT -> getString(R.string.localonlyhotspot)
         WirelessHotspotMode.MANUAL -> getString(R.string.manual_hotspot)
+        WirelessHotspotMode.EXISTING_WIFI -> "Existing Wi-Fi"
     }
 
     private fun menuText(
