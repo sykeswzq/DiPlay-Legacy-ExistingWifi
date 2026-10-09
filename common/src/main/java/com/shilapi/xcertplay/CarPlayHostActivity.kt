@@ -2510,9 +2510,7 @@ class CarPlayHostActivity : ComponentActivity() {
                 manualHotspotSecurity != ManualHotspotSecurity.OPEN &&
                 manualHotspotPassphrase.length !in 8..63 ->
                 getString(R.string.wpa2_wpa3_password_must_be_8_63_characters)
-            wirelessHotspotMode == WirelessHotspotMode.EXISTING_WIFI &&
-                manualHotspotPassphrase.isNotEmpty() && manualHotspotPassphrase.length !in 8..63 ->
-                getString(R.string.wpa2_wpa3_password_must_be_8_63_characters)
+
             else -> null
         }
         manualHotspotErrorView?.text = error.orEmpty()
