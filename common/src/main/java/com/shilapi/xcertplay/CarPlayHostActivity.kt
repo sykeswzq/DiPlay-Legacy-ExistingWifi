@@ -2495,16 +2495,23 @@ class CarPlayHostActivity : ComponentActivity() {
             manualHotspotSsid.encodeToByteArray().size > 32 ->
                 getString(R.string.hotspot_ssid_must_be_at_most_32_utf_8_bytes)
             '\u0000' in manualHotspotSsid -> getString(R.string.hotspot_ssid_contains_u_0000)
-            manualHotspotChannel !in 0..196 -> getString(R.string.channel_must_be_0_or_1_196)
-            manualHotspotChannel != 0 &&
+            wirelessHotspotMode != WirelessHotspotMode.EXISTING_WIFI &&
+                manualHotspotChannel !in 0..196 -> getString(R.string.channel_must_be_0_or_1_196)
+            wirelessHotspotMode != WirelessHotspotMode.EXISTING_WIFI &&
+                manualHotspotChannel != 0 &&
                 !isManualHotspotChannelCompatible(manualHotspotBand, manualHotspotChannel) ->
                 getString(R.string.channel_is_not_valid_for_the_selected_band)
             '\u0000' in manualHotspotPassphrase -> getString(R.string.hotspot_password_contains_u_0000)
-            manualHotspotSecurity == ManualHotspotSecurity.OPEN &&
+            wirelessHotspotMode != WirelessHotspotMode.EXISTING_WIFI &&
+                manualHotspotSecurity == ManualHotspotSecurity.OPEN &&
                 manualHotspotPassphrase.isNotEmpty() ->
                 getString(R.string.password_must_be_empty_when_security_is_open)
-            manualHotspotSecurity != ManualHotspotSecurity.OPEN &&
+            wirelessHotspotMode != WirelessHotspotMode.EXISTING_WIFI &&
+                manualHotspotSecurity != ManualHotspotSecurity.OPEN &&
                 manualHotspotPassphrase.length !in 8..63 ->
+                getString(R.string.wpa2_wpa3_password_must_be_8_63_characters)
+            wirelessHotspotMode == WirelessHotspotMode.EXISTING_WIFI &&
+                manualHotspotPassphrase.isNotEmpty() && manualHotspotPassphrase.length !in 8..63 ->
                 getString(R.string.wpa2_wpa3_password_must_be_8_63_characters)
             else -> null
         }
