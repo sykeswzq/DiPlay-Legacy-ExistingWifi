@@ -50,9 +50,8 @@ class ExistingWifiManager(
     }
 
     init {
-        require(ManualHotspotValidation.error(ssid, passphrase) == null) {
-            "Invalid existing Wi-Fi credentials"
-        }
+        require(ssid.isNotBlank()) { "Existing Wi-Fi SSID is required" }
+        require('\u0000' !in ssid) { "Existing Wi-Fi SSID contains invalid character" }
     }
 
     override fun start(timeoutMillis: Long): WirelessHotspotInfo {
