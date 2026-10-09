@@ -2307,6 +2307,7 @@ class CarPlayHostActivity : ComponentActivity() {
                 add(WirelessHotspotMode.WIFI_P2P to getString(R.string.wi_fi_p2p_5_ghz))
             }
             add(WirelessHotspotMode.MANUAL to getString(R.string.built_in_car_hotspot))
+            add(WirelessHotspotMode.EXISTING_WIFI to "现有 Wi-Fi / 手机热点")
         }
         var selectedId = View.NO_ID
         for ((mode, label) in modes) {
@@ -2462,7 +2463,7 @@ class CarPlayHostActivity : ComponentActivity() {
     }
 
     private fun updateManualHotspotFields() {
-        val visible = wirelessHotspotMode == WirelessHotspotMode.MANUAL
+        val visible = wirelessHotspotMode == WirelessHotspotMode.MANUAL || wirelessHotspotMode == WirelessHotspotMode.EXISTING_WIFI
         manualHotspotFields?.visibility = if (visible) View.VISIBLE else View.GONE
         if (!visible) manualHotspotErrorView?.visibility = View.GONE
     }
@@ -2488,7 +2489,7 @@ class CarPlayHostActivity : ComponentActivity() {
     }
 
     private fun validateManualHotspotSettings(): Boolean {
-        if (wirelessHotspotMode != WirelessHotspotMode.MANUAL) return true
+        if (wirelessHotspotMode == WirelessHotspotMode.WIFI_P2P) return true
         val error = when {
             manualHotspotSsid.isBlank() -> getString(R.string.hotspot_ssid_is_required)
             manualHotspotSsid.encodeToByteArray().size > 32 ->
