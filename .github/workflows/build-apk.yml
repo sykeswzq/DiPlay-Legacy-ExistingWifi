@@ -22,6 +22,13 @@ jobs:
         with:
           packages: platform-tools platforms;android-37.0 build-tools;36.0.0 ndk;28.2.13676358
       - uses: gradle/actions/setup-gradle@v4
+      - name: Fetch MFi certs from upstream release
+        run: |
+          mkdir -p shared/src/main/assets/offline-mfi
+          curl -sL -o /tmp/legacy.apk "https://github.com/programmerguohuajing/DiPlay-Legacy-Android/releases/download/v0.2.22/DiPlay-v0.2.22-legacy-release.apk"
+          cd /tmp && unzip -o legacy.apk "assets/offline-mfi/*" -d mfi-extract
+          cp mfi-extract/assets/offline-mfi/* $GITHUB_WORKSPACE/shared/src/main/assets/offline-mfi/
+          ls -la shared/src/main/assets/offline-mfi/
       - name: Fix gradlew permissions
         run: chmod +x ./gradlew
       - name: Build debug APK
